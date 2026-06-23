@@ -337,6 +337,22 @@ class API
                 'FolderChange' => $folderChange
             ]
         ];
+        $changes = $foldersFields['DisplayName'];
+
+        $request = ['FolderChanges' => [
+            'FolderChange' => [
+                'FolderId' => $folderId->toArray(),
+                'Updates' =>[
+                    'SetFolderField'=>[
+                        'FieldURI'=>['FieldURI'=>'folder:DisplayName'],
+                        'Folder'=>[
+                            'DisplayName'=>$changes
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        ];
 
         $request = array_replace_recursive($request, $options);
 

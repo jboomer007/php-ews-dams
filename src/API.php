@@ -125,7 +125,7 @@ class API
         ));
     }
 
-    public function getPrimarySmptEmailAddress()
+    public function getPrimarySmtpEmailAddress()
     {
         if ($this->getPrimarySmtpMailbox() == null) {
             return null;
@@ -314,7 +314,7 @@ class API
     /**
      * Apply a set of field changes to a folder.
      *
-     * $foldersFields is the contents of the <Updates> element, e.g.
+     * $foldersFields are the contents of the <Updates> element, e.g.
      *       [
      *          'FieldURI' => ['FieldURI' => 'folder:DisplayName'],
      *          'Folder' =>['DisplayName' => 'New Folder Name'],
@@ -328,7 +328,6 @@ class API
     public function updateFolder(BaseFolderIdType $folderId, $foldersFields, $options = [])
     {
         $folderChange = $folderId->toArray(true);
-
         $folderChange['Updates'] =['SetFolderField' => $foldersFields];
         $request = [
             'FolderChanges' => [
@@ -336,36 +335,32 @@ class API
             ]
         ];
 
-        /*$request = ['FolderChanges' => [
-            'FolderChange' => [
-                'FolderId' => $folderId->toArray(),
-                'Updates' =>[
-                    'SetFolderField'=>[
-                        'FieldURI'=>['FieldURI'=>'folder:DisplayName'],
-                        'Folder'=>[
-                            'DisplayName'=>$changes
-                        ],
-                    ],
-                ],
-            ],
-        ],
-        ];*/
-
         $request = array_replace_recursive($request, $options);
 
         $request = Type::buildFromArray($request);
 
-        $response = $this->getClient()->UpdateFolder($request);
-        dd($response);
+        try {
+            $response = $this->getClient()->UpdateFolder($request);
+        } catch (API\Exception $e) {
+            // Exchange renames the folder but returns ErrorInternalServerError
+            // ("Value cannot be null. (Parameter 'participantResolver')") on
+            // cold/app-only mailboxes. The write succeeds, so verify the folder
+            // instead of failing outright; rethrow anything else.
+            if (stripos($e->getMessage(), 'internal server error') === false) {
+                throw $e;
+            }
+
+            return Utilities\ensureIsArray($this->getFolder($folderId->toArray(true)));
+        }
+
         if ($response instanceof FolderInfoResponseMessageType) {
             return $response->getFolders();
         }
-
         return Utilities\ensureIsArray($response);
     }
 
     /**
-     * Get a folder by it's distinguishedId
+     * Get a folder by its distinguishedId
      *
      * @param string $distinguishedId
      * @param array $options

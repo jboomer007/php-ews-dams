@@ -330,7 +330,7 @@ class API
     public function updateFolder(BaseFolderIdType $folderId, $foldersFields, $options = [])
     {
         $folderChange = $folderId->toArray(true);
-        $folderChange['Updates'] = $foldersFields;
+        $folderChange['Updates'] = ['SetFolderField'=>[$foldersFields]];
 
         $request = [
             'FolderChanges' => [
@@ -339,7 +339,7 @@ class API
         ];
         $changes = $foldersFields['DisplayName'];
 
-        $request = ['FolderChanges' => [
+        /*$request = ['FolderChanges' => [
             'FolderChange' => [
                 'FolderId' => $folderId->toArray(),
                 'Updates' =>[
@@ -352,7 +352,7 @@ class API
                 ],
             ],
         ],
-        ];
+        ];*/
 
         $request = array_replace_recursive($request, $options);
 

@@ -330,14 +330,13 @@ class API
     public function updateFolder(BaseFolderIdType $folderId, $foldersFields, $options = [])
     {
         $folderChange = $folderId->toArray(true);
-        $folderChange['Updates'] = ['SetFolderField'=>[$foldersFields]];
 
+        $folderChange['Updates']['SetFolderField'] = [$foldersFields];
         $request = [
             'FolderChanges' => [
                 'FolderChange' => $folderChange
             ]
         ];
-        $changes = $foldersFields['DisplayName'];
 
         /*$request = ['FolderChanges' => [
             'FolderChange' => [

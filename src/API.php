@@ -357,8 +357,6 @@ class API
 
         $request = Type::buildFromArray($request);
 
-        dd($request);
-
         $response = $this->getClient()->UpdateFolder($request);
         if ($response instanceof FolderInfoResponseMessageType) {
             return $response->getFolders();

@@ -331,7 +331,7 @@ class API
     {
         $folderChange = $folderId->toArray(true);
 
-        $folderChange['Updates']['SetFolderField'] = [$foldersFields];
+        $folderChange['Updates'] =['SetFolderField' => $foldersFields];
         $request = [
             'FolderChanges' => [
                 'FolderChange' => $folderChange

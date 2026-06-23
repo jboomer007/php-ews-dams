@@ -315,12 +315,10 @@ class API
      * Apply a set of field changes to a folder.
      *
      * $foldersFields is the contents of the <Updates> element, e.g.
-     *     [
-     *         'SetFolderField' => [
-     *             'FieldURI' => ['FieldURI' => 'folder:DisplayName'],
-     *             'Folder'   => ['DisplayName' => 'New Name'],
-     *         ],
-     *     ]
+     *       [
+     *          'FieldURI' => ['FieldURI' => 'folder:DisplayName'],
+     *          'Folder' =>['DisplayName' => 'New Folder Name'],
+     *       ];
      *
      * @param BaseFolderIdType $folderId
      * @param array $foldersFields
@@ -358,6 +356,7 @@ class API
         $request = Type::buildFromArray($request);
 
         $response = $this->getClient()->UpdateFolder($request);
+        dd($response);
         if ($response instanceof FolderInfoResponseMessageType) {
             return $response->getFolders();
         }

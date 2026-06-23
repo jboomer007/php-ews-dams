@@ -7,8 +7,11 @@ use garethp\ews\API\Message\EmptyFolderResponseType;
 use garethp\ews\API\Message\GetServerTimeZonesType;
 use garethp\ews\API\Message\SyncFolderItemsResponseMessageType;
 use garethp\ews\API\Message\UpdateItemResponseMessageType;
+use garethp\ews\API\Message\FolderInfoResponseMessageType;
 use garethp\ews\API\Type;
 use garethp\ews\API\Type\BaseFolderIdType;
+use garethp\ews\API\Type\BaseFolderType;
+
 
 /**
  * A base class for APIs
@@ -307,28 +310,46 @@ class API
         return $response;
     }
 
-    public function updateFolder(BaseFolderIdType $folderId, $changes, $options = [])
+
+    /**
+     * Apply a set of field changes to a folder.
+     *
+     * $foldersFields is the contents of the <Updates> element, e.g.
+     *     [
+     *         'SetFolderField' => [
+     *             'FieldURI' => ['FieldURI' => 'folder:DisplayName'],
+     *             'Folder'   => ['DisplayName' => 'New Name'],
+     *         ],
+     *     ]
+     *
+     * @param BaseFolderIdType $folderId
+     * @param array $foldersFields
+     * @param array $options
+     * @return Type\BaseFolderType[]|Type
+     */
+    public function updateFolder(BaseFolderIdType $folderId, $foldersFields, $options = [])
     {
-	        $request = ['FolderChanges' => [
-            'FolderChange' => [
-                'FolderId' => $folderId->toArray(),
-                'Updates' =>[
-					'SetFolderField'=>[
-						'FieldURI'=>['FieldURI'=>'folder:DisplayName'],
-						'Folder'=>[
-							'DisplayName'=>$changes
-						],
-					],
-				],
-            ],
-		],
-	];
- 	$request = array_replace_recursive($request, $options);
+        $folderChange = $folderId->toArray(true);
+        $folderChange['Updates'] = $foldersFields;
+
+        $request = [
+            'FolderChanges' => [
+                'FolderChange' => $folderChange
+            ]
+        ];
+
+        $request = array_replace_recursive($request, $options);
+
         $request = Type::buildFromArray($request);
+
         $response = $this->getClient()->UpdateFolder($request);
-        return $response;
+        if ($response instanceof FolderInfoResponseMessageType) {
+            return $response->getFolders();
+        }
+
+        return Utilities\ensureIsArray($response);
     }
-  
+
     /**
      * Get a folder by it's distinguishedId
      *
